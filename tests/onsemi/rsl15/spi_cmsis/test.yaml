@@ -1,0 +1,32 @@
+# onsemi RSL15 SDK sample `spi_cmsis` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified: SPI0
+# master and SPI1 slave on one board (the readme's single-board jumpers; pyrite's RSL15 SPI pair is
+# wired the same way), CMSIS SPI driver with DMA on both sides (RTE_Device.h: SPI0 RX/TX DMA 0/1,
+# SPI1 2/3). A button press (GPIO0 low at 300 ms) makes the master send "onsemi SPI" (11 bytes) while
+# the slave sends the same string back.
+# What is checked: each side's TRANSFER_COMPLETE callback compares the bytes it RECEIVED with what the
+# other side sent (memcmp) and blinks its LED once (2 toggles, 0.5 s each) on a match, 5 times (10
+# toggles) on a mismatch. GREEN_LED (GPIO8, master) and BLUE_LED (GPIO10, slave) idle high (the
+# trace has no edge before the first toggle). So: green goes low once for 0.5 s just after the
+# press and then stays high to the end of the run (no second blink = not the error path); blue
+# does the same after green (the slave callback runs once the master's ISR returns). Both sides' rx
+# buffers can only match if every byte crossed the bus in both directions through the DMA.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes spi_cmsis.elf here.
+mcu: RSL15
+elf: spi_cmsis.elf
+elf_external: true
+timeout: 4
+sim_args: ["--gpio-in", "gpio.0@300ms=0", "--gpio-in", "gpio.0@400ms=1",
+           "--trace-symbol", "Master_CallBack", "--trace-symbol", "Slave_CallBack",
+           "--trace-symbol", "HardFault_Handler"]
+expect_log:
+  - "(TRACE) Master_CallBack "
+  - "(TRACE) Slave_CallBack "
+expect_log_absent:
+  - "(TRACE) HardFault_Handler"
+pad_edges:
+  - {"port": "gpio", "pin": 8,
+     "cases": [{"level": 0, "window_ns": [302000000, 800000000]},
+               {"level": 1, "window_ns": [802000000, 3990000000]}]}
+  - {"port": "gpio", "pin": 10,
+     "cases": [{"level": 0, "window_ns": [1302000000, 1800000000]},
+               {"level": 1, "window_ns": [1802000000, 3990000000]}]}

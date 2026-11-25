@@ -1,0 +1,17 @@
+# onsemi RSL15 SDK sample `secure_bootloader` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified,
+# Debug build, on an empty device: it prints its flash map over swmTrace RTT, finds no valid image in
+# the download or execution area, and enters firmware-update mode, as its README says it does.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes secure_bootloader.elf.
+mcu: RSL15
+elf: secure_bootloader.elf
+elf_external: true
+rtt: true
+timeout: 1
+sim_args: ["--trace-symbol", "HardFault_Handler"]
+expect:
+  - "-I-Bootloader Initialized"
+  - "-I-App Base      : 0x00106000"
+  - "-W-Application Startup Failed"
+  - "-I-Firmware Update Mode"
+expect_absent:
+  - "(TRACE) HardFault_Handler"

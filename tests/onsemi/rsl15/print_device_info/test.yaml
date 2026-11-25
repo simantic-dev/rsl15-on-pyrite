@@ -1,0 +1,16 @@
+# onsemi RSL15 SDK sample `print_device_info` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified.
+# Boot fixture (L1), and its swmTrace log over UART via DMA: SDK start-up through trim load and clock setup into main, no HardFault.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes print_device_info.elf here.
+mcu: RSL15
+elf: print_device_info.elf
+elf_external: true
+timeout: 1
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:HardFault_Handler"]
+expect:
+  - "-I-Chip Family: 11"
+  - "-I-Chip Version: 2"
+  - "-I-Chip Major Revision: 2"
+  - "-I-Chip Minor Revision: 0"
+  - "(TRACE) main "
+expect_absent:
+  - "(TRACE) HardFault_Handler"

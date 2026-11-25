@@ -1,0 +1,4 @@
+*.elf
+gen/
+*.bin
+__pycache__/

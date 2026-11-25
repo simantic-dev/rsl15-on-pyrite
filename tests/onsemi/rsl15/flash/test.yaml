@@ -1,0 +1,15 @@
+# onsemi RSL15 SDK sample `flash` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified: erases,
+# writes, reads back and verifies flash through the boot ROM's flash API (the ROM stand-in,
+# pyrite models/onsemi/rsl15_rom.S), then sits in its main loop. Every demo step runs and none ends in
+# App_Demo_Error (the sample's error spin).
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes flash.elf here.
+mcu: RSL15
+elf: flash.elf
+elf_external: true
+timeout: 2
+sim_args: ["--trace-symbol", "dut:App_Demo_Error", "--trace-symbol", "dut:App_Demo_SequentialWrite", "--trace-symbol", "dut:App_Demo_WordWrite"]
+expect:
+  - "(TRACE) App_Demo_SequentialWrite "
+  - "(TRACE) App_Demo_WordWrite "
+expect_absent:
+  - "(TRACE) App_Demo_Error"

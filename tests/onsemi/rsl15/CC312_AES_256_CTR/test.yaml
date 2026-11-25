@@ -1,0 +1,13 @@
+# onsemi RSL15 SDK sample `CC312_AES_256_CTR` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified: runs its
+# known-answer tests on the CryptoCell-312 and logs the verdict over SEGGER RTT (swmTrace RTT), which
+# the fixture reads. The PASS line is the sample's own.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes CC312_AES_256_CTR.elf here.
+mcu: RSL15
+elf: CC312_AES_256_CTR.elf
+elf_external: true
+timeout: 20
+rtt: true
+expect:
+  - "-PASS-AES-256 encryption operation"
+expect_absent:
+  - "-FAIL-"

@@ -1,0 +1,28 @@
+# onsemi RSL15 SDK sample `secure_bootloader` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified,
+# Debug build (Basic configuration, bl_options.h default), with the pack's own loadable application
+# (secure_bootloader/utilities/loadable_samples/blinky.zip, built in its bl_D_Basic configuration:
+# linked at the app execution area 0x00106000) preloaded there. The bootloader finds no download
+# image, validates the application (BL_CheckRelocatedApplicationSize: the vector table's image and
+# certificate size words) and starts it: blinky then toggles GPIO8 on TIMER0 (781 x 8 ticks of
+# SLOWCLK/32 = 199.936 ms) and GPIO10 on SysTick (RELOAD 3125 + 1 at 31.25 kHz = 100.032 ms).
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes secure_bootloader.elf
+# and blinky_bl.bin here.
+mcu: RSL15
+elf: secure_bootloader.elf
+preload: ["blinky_bl.bin@0x00106000"]
+elf_external: true
+rtt: true
+timeout: 2
+sim_args: ["--trace-symbol", "HardFault_Handler"]
+expect:
+  - "-I-Bootloader Initialized"
+  - "-I-App Base      : 0x00106000"
+expect_absent:
+  - "Application Startup Failed"
+  - "Firmware Update Mode"
+  - "(TRACE) HardFault_Handler"
+pad_edges:
+  - {"port": "gpio", "pin": 8, "tol_ns": 1000,
+     "cases": [{"periodic": {"period_ns": 399872000, "high_ns": 199936000, "min_cycles": 3}}]}
+  - {"port": "gpio", "pin": 10, "tol_ns": 1000,
+     "cases": [{"periodic": {"period_ns": 200064000, "high_ns": 100032000, "min_cycles": 8}}]}

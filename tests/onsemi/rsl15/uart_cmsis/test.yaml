@@ -1,0 +1,20 @@
+# onsemi RSL15 SDK sample `uart_cmsis` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified.
+# Boot, and on a button press (GPIO0 low at 300 ms) the CMSIS USART driver sends "UART CMSIS TEST."
+# over UART0 through its TX DMA channel; the README's TX->RX jumper (overlay.board) loops it back into
+# the RX DMA channel. The app calls memcmp only on ARM_USART_EVENT_RECEIVE_COMPLETE (the RX DMA
+# channel finished with all 16 bytes), so its trace proves the round trip. Boot fixture (L1): SDK start-up through trim load and clock setup into main, no HardFault.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes uart_cmsis.elf here.
+mcu: RSL15
+elf: uart_cmsis.elf
+elf_external: true
+timeout: 4
+overlay: overlay.board
+sim_args: ["--gpio-in", "gpio.0@300ms=0", "--gpio-in", "gpio.0@400ms=1", "--trace-symbol", "main", "--trace-symbol", "memcmp", "--trace-symbol", "HardFault_Handler"]
+expect:
+  - "UART CMSIS TEST."
+# --gpio-in makes this a plain run, whose trace lines are in the log, not the UART capture.
+expect_log:
+  - "(TRACE) main "
+  - "(TRACE) memcmp "
+expect_log_absent:
+  - "(TRACE) HardFault_Handler"

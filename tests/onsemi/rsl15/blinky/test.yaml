@@ -1,0 +1,18 @@
+# onsemi RSL15 SDK sample `blinky` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified.
+# Boots through the SDK start-up into main with no HardFault, and the two interrupts that blink its
+# LEDs come at the SDK's own rates through the modelled clock tree: TIMER0 every 200 ms
+# (TIMER0_TIMEOUT_VAL_SETTING 781, TIMER_PRESCALE_8, SLOWCLK/32 at 1 MHz SLOWCLK = 199.936 ms) and
+# SysTick every 100 ms (OS_Tick_Setup(10), SLOWCLK/32 reference). In 2 s: 9 and 19 to 20.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes blinky.elf here.
+mcu: RSL15
+elf: blinky.elf
+elf_external: true
+timeout: 2
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:HardFault_Handler", "--trace-symbol", "dut:TIMER0_IRQHandler", "--trace-symbol", "dut:SysTick_Handler"]
+expect:
+  - "(TRACE) main "
+expect_absent:
+  - "(TRACE) HardFault_Handler"
+expect_bands:
+  - {re: "\\(TRACE\\) TIMER0_IRQHandler ", count: true, min: 9, max: 10}
+  - {re: "\\(TRACE\\) SysTick_Handler ", count: true, min: 19, max: 20}

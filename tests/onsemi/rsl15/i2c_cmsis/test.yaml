@@ -1,0 +1,17 @@
+# onsemi RSL15 SDK sample `i2c_cmsis` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified: I2C1
+# as master and I2C0 as slave on one bus (the EVB wires them together; pyrite's RSL15 I2C pair shares
+# one bus). A button press (GPIO0 low at 300 ms) starts the demo: register writes and 256 single-byte
+# read-backs through the CMSIS I2C driver, both ends interrupt driven. The success lines are the
+# sample's own, logged over UART (swmTrace UART DMA).
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes i2c_cmsis.elf here.
+mcu: RSL15
+elf: i2c_cmsis.elf
+elf_external: true
+timeout: 3
+sim_args: ["--gpio-in", "gpio.0@300ms=0", "--gpio-in", "gpio.0@400ms=1"]
+expect:
+  - "Starting demo"
+  - "Slave transmitted data successfully!"
+  - "Demo completed successfully!"
+expect_absent:
+  - "Error"

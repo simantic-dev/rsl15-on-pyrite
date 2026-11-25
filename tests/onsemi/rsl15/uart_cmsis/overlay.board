@@ -1,0 +1,2 @@
+# EVB jumper UART_TX (GPIO6) -> UART_RX (GPIO5), as the sample's README asks.
+uart_loop: UART.Loopback @ uart

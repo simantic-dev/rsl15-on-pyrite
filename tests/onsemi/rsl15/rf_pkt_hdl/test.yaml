@@ -1,0 +1,12 @@
+# onsemi RSL15 SDK sample `rf_pkt_hdl` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified.
+# Boot fixture (L1): SDK start-up through trim load and clock setup into main, no HardFault.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes rf_pkt_hdl.elf here.
+mcu: RSL15
+elf: rf_pkt_hdl.elf
+elf_external: true
+timeout: 1
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:HardFault_Handler"]
+expect:
+  - "(TRACE) main "
+expect_absent:
+  - "(TRACE) HardFault_Handler"

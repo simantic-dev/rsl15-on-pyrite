@@ -1,0 +1,21 @@
+# onsemi RSL15 SDK sample `timers` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified, Debug build.
+# TIMER0 (free-run) toggles GREEN_LED (GPIO8) every 2048 ticks of SLOWCLK/32 = 31.25 kHz (65.536 ms);
+# TIMER1 (single shot, 65536 ticks = 2.097 s) sets TIMER0 to 0x3000 (393.216 ms) and starts TIMER2,
+# whose 4 shots each lower it by 0x800 (327.68, 262.144, 196.608, 131.072 ms). Each new TIMEOUT_VALUE
+# applies from TIMER0's next reload (HW Reference 13.7.2). Every number is register-derived.
+# Not checked: TIMER3 GPIO capture (needs a GPIO0 edge; capture not modelled).
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes timers.elf here.
+mcu: RSL15
+elf: timers.elf
+elf_external: true
+timeout: 12
+sim_args: ["--trace-symbol", "HardFault_Handler"]
+expect_absent:
+  - "(TRACE) HardFault_Handler"
+pad_edges: {"port": "gpio", "pin": 8, "tol_ns": 1000,
+            "cases": [{"periodic": {"period_ns": 131072000, "high_ns": 65536000, "min_cycles": 14}},
+           {"periodic": {"period_ns": 786432000, "high_ns": 393216000, "min_cycles": 2}},
+           {"periodic": {"period_ns": 655360000, "high_ns": 327680000, "min_cycles": 2}},
+           {"periodic": {"period_ns": 524288000, "high_ns": 262144000, "min_cycles": 2}},
+           {"periodic": {"period_ns": 393216000, "high_ns": 196608000, "min_cycles": 2}},
+           {"periodic": {"period_ns": 262144000, "high_ns": 131072000, "min_cycles": 2}}]}

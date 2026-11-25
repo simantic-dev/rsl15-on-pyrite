@@ -1,0 +1,16 @@
+# onsemi RSL15 SDK sample `pwm` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified.
+# SYSCLK = RFCLK 48 MHz / 6 = 8 MHz (Sys_Clocks_XTALClkConfig(CK_DIV_1_6_PRESCALE_6_BYTE)); PWM clock
+# is SYSCLK (RTE_PWM_SLOWCLK 0 -> CLK_DIV_CFG2.PWM_CLK_SRC = 0), 125 ns a cycle. RTE_Device.h writes
+# PERIOD 100 and HIGH 50 on both channels: PERIOD + 1 = 101 cycles (12625 ns), HIGH + 1 = 51 cycles
+# high (6375 ns) (HW Reference 11.4, Figure 58). PWM0 on GPIO2 (IO_MODE PWM0), PWM1 on GPIO3;
+# pwm->SetOffset(PWM_1, 50) writes OFFSET[0] = 50 | ENABLE: GPIO3 rises 50 cycles (6250 ns) after GPIO2.
+# The readme's "80 kHz" is 8 MHz / 101 = 79.2 kHz.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes pwm.elf here.
+mcu: RSL15
+elf: pwm.elf
+elf_external: true
+timeout: 0.1
+pad_edges:
+  - {port: gpio, pin: 2, tol_ns: 1, cases: [{periodic: {period_ns: 12625, high_ns: 6375, min_cycles: 100}}]}
+  - {port: gpio, pin: 3, tol_ns: 1, cases: [{periodic: {period_ns: 12625, high_ns: 6375, min_cycles: 100}},
+                                           {lag: {ref: {port: gpio, pin: 2}, lag_ns: 6250, min_cycles: 100}}]}

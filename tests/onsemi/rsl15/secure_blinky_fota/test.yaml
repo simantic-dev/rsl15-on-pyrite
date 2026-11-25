@@ -1,0 +1,15 @@
+# onsemi RSL15 SDK sample `secure_blinky_fota` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified,
+# Debug build. The application half of the FOTA pair, linked at 0x00141000 behind the bootloader and
+# the prebuilt FOTA stack (pack lib/Release_Secure/libfota.a, built with -mlong-calls: build_sdk.py).
+# Booted directly from its own vector table, not through the bootloader. Boot fixture (L1): SDK
+# start-up into main, no HardFault; the DFU entry (button) is not exercised.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes secure_blinky_fota.elf.
+mcu: RSL15
+elf: secure_blinky_fota.elf
+elf_external: true
+timeout: 1
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:HardFault_Handler"]
+expect:
+  - "(TRACE) main "
+expect_absent:
+  - "(TRACE) HardFault_Handler"

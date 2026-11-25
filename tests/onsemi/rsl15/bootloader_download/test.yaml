@@ -1,0 +1,18 @@
+# onsemi RSL15 SDK sample `bootloader` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified, with
+# the pack's own bootloader-compatible image utility/blinky.bin in the app download area (0x00143000).
+# The bootloader finds a valid image in the download area, copies it over the execution area,
+# invalidates the download area and boots it: blinky's Reset_Handler runs once, then its TIMER0
+# handler every 200 ms (the copy takes the first ~0.2 s).
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes bootloader.elf and
+# copies utility/blinky.bin here.
+mcu: RSL15
+elf: bootloader.elf
+preload: ["blinky.bin@0x00143000"]
+elf_external: true
+timeout: 3
+sim_args: ["--trace-symbol", "dut:0x00108124", "--trace-symbol", "dut:0x0010ae44"]
+expect:
+  - "(TRACE) 0x00108124 "
+expect_bands:
+  - {re: "\\(TRACE\\) 0x00108124 ", count: true, min: 1, max: 1}
+  - {re: "\\(TRACE\\) 0x0010ae44 ", count: true, min: 12, max: 15}

@@ -1,0 +1,14 @@
+# onsemi RSL15 SDK sample `dma` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified, Debug build.
+# DMA channel 0 copies src_buffer to dst_buffer (CMSIS DMA driver, memory to memory); the app compares
+# the two and, only if every byte matches, drives DMA_STATES_GPIO (BLUE_LED, GPIO10) low. The pad is
+# driven high (OUTPUT_DATA) before it is made an output, so its one falling edge is the success branch.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes dma.elf here.
+mcu: RSL15
+elf: dma.elf
+elf_external: true
+timeout: 0.5
+sim_args: ["--trace-symbol", "HardFault_Handler"]
+expect_absent:
+  - "(TRACE) HardFault_Handler"
+pad_edges: {"port": "gpio", "pin": 10,
+            "cases": [{"level": 0, "window_ns": [10000000, 490000000]}]}

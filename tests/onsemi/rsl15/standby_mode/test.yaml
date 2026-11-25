@@ -1,0 +1,16 @@
+# onsemi RSL15 SDK sample `standby_mode` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified,
+# Debug build, default wake-up source (RTC alarm, RTC_COUNT_THRES 32767 on the 32768 Hz STANDBYCLK:
+# 1 s). It enters Standby (ACS PWR_MODES_CTRL + WFI), the RTC alarm wakes it through WAKEUP_IRQ,
+# its handler clears the flag and resets the RTC, and it goes back to Standby: one wake per second.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes standby_mode.elf.
+mcu: RSL15
+elf: standby_mode.elf
+elf_external: true
+timeout: 4.5
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:HardFault_Handler", "--trace-symbol", "dut:RTC_Alarm_Wakeup_Process_Handler"]
+expect:
+  - "(TRACE) main "
+expect_absent:
+  - "(TRACE) HardFault_Handler"
+expect_bands:
+  - {re: "\\(TRACE\\) RTC_Alarm_Wakeup_Process_Handler ", count: true, min: 4, max: 4}

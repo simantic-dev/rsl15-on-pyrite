@@ -1,0 +1,14 @@
+# onsemi RSL15 SDK sample `swmTrace_logger` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified.
+# Boot fixture (L1), and its swmTrace log over UART via DMA: SDK start-up through trim load and clock setup into main, no HardFault.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes swmTrace_logger.elf here.
+mcu: RSL15
+elf: swmTrace_logger.elf
+elf_external: true
+timeout: 1
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:HardFault_Handler"]
+expect:
+  - "-I-LED : ON"
+  - "-I-LED : OFF"
+  - "(TRACE) main "
+expect_absent:
+  - "(TRACE) HardFault_Handler"

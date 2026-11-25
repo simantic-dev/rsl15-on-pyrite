@@ -1,0 +1,6 @@
+*.elf
+*.bin
+*.lib
+gen/
+__pycache__/
+/rsl15-pack/

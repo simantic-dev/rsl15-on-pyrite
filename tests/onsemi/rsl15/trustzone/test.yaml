@@ -1,0 +1,13 @@
+# onsemi RSL15 SDK samples `trustzone_secure` + `trustzone_non_secure` (CMSIS-Pack
+# ONSemiconductor.RSL15 1.12.374), unmodified, as one machine: the secure image configures the SAU
+# and the non-secure peripheral access, calls the non-secure image (blxns), which calls the secure
+# APIs through the NSC veneers and then sends UART_DATA "onsemi UART" from non-secure code.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. builds both samples; copy
+# trustzone_secure.elf and trustzone_non_secure.elf here.
+mcu: RSL15
+elf: trustzone_secure.elf
+preload: [trustzone_non_secure.elf]
+elf_external: true
+timeout: 3  # the secure main starts with Sys_Delay(1 s)
+expect:
+  - "onsemi UART"

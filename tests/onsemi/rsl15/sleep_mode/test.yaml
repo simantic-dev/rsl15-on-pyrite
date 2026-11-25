@@ -1,0 +1,22 @@
+# onsemi RSL15 SDK sample `sleep_mode` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified, Debug
+# build, default SLEEP_MODE_TEST_MEMORY_RETENTION with the RTC alarm (1 s) as wake source. Each cycle:
+# power_modes.c writes the resume record (MSP, VTOR, _Sys_PowerModes_WakeupFromRAM, CRC) at
+# __Wakeup_addr, points SYSCTRL_WAKEUP_ADDR at it, sets BOOT_CFG BOOT_CUSTOM, writes the Sleep key;
+# the digital domain powers down; the RTC alarm resets it; the boot ROM resumes from the record in
+# retained DRAM (HW Reference 8.6.6), the WAKEUP interrupt runs RTC_Alarm_Wakeup_Process_Handler, and
+# it sleeps again. One cold boot (main once), then one resume per second.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes sleep_mode.elf here.
+mcu: RSL15
+elf: sleep_mode.elf
+elf_external: true
+timeout: 4.5
+sim_args: ["--trace-symbol", "dut:main", "--trace-symbol", "dut:_Sys_PowerModes_WakeupFromRAM",
+           "--trace-symbol", "dut:RTC_Alarm_Wakeup_Process_Handler", "--trace-symbol", "dut:HardFault_Handler"]
+expect:
+  - "(TRACE) _Sys_PowerModes_WakeupFromRAM "
+expect_absent:
+  - "(TRACE) HardFault_Handler"
+expect_bands:
+  - {re: "\\(TRACE\\) main ", count: true, min: 1, max: 1}
+  - {re: "\\(TRACE\\) _Sys_PowerModes_WakeupFromRAM ", count: true, min: 4, max: 4}
+  - {re: "\\(TRACE\\) RTC_Alarm_Wakeup_Process_Handler ", count: true, min: 4, max: 4}

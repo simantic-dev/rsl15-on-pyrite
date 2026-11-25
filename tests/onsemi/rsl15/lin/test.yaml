@@ -1,0 +1,23 @@
+# onsemi RSL15 SDK sample `lin` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified: the default
+# LIN_CONTROLLER build. One board: the readme pairs it with a second board built as LIN_PERIPHERAL
+# (an app.h edit), which build_sdk.py does not make, so only the controller's write request runs.
+# A button press (GPIO0 low at 300 ms) sends the header with the UART: break on GPIO2, then 0x55 and
+# PID_W(6) = 0x16 with parity = 0xD6. The transceiver reflects it onto RXD (overlay.board), the LIN
+# block takes the header and raises LIN0 (RHC); FrameStart loads DLB/DATA with "onsemi", and
+# CheckTransferDone reports ARM_LIN_EVENT_SEND_COMPLETE: GREEN_LED (GPIO8) toggles 4 times, 0.5 s
+# apart (2 blinks = success; failure is 10 toggles). The window case proves no 5th toggle.
+# Not checked: the read request (second press), which needs the peripheral board to answer.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes lin.elf here.
+mcu: RSL15
+elf: lin.elf
+elf_external: true
+timeout: 4
+overlay: overlay.board
+sim_args: ["--gpio-in", "gpio.0@300ms=0", "--gpio-in", "gpio.0@400ms=1", "--trace-symbol", "LIN0_IRQHandler", "--trace-symbol", "HardFault_Handler"]
+expect_log:
+  - "(TRACE) LIN0_IRQHandler "
+expect_log_absent:
+  - "(TRACE) HardFault_Handler"
+pad_edges: {port: gpio, pin: 8, tol_ns: 100000,
+            cases: [{intervals_ns: [500000000], min_repeats: 3},
+                    {level: 1, window_ns: [2000000000, 3900000000]}]}

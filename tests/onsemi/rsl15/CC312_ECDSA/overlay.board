@@ -1,0 +1,6 @@
+# onsemi runs this sample from the IDE with the debug port powered, which holds the RSL15 watchdog
+# stopped (HW Reference 13.8). The sample computes longer than the 8.4 s watchdog window (4.194 s
+# warning + 4.194 s reset at the reset TIMEOUT_VALUE 0xB) without a refresh, so on a board with no
+# probe it would be reset before it prints its verdict.
+watchdog:
+    debugPortPowered: true

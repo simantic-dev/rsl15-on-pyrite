@@ -1,0 +1,3 @@
+# The NCV7420 transceiver reflects TXD onto RXD (HW Reference 11.2.2): the header the UART sends
+# comes back on the RX line the LIN block reads. Stood in for by the UART loopback.
+lin_echo: UART.Loopback @ uart

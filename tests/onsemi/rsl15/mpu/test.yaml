@@ -1,0 +1,26 @@
+# onsemi RSL15 SDK sample `mpu` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), unmodified, Debug build.
+# GREEN_LED (GPIO8) toggles on TIMER0 (781 ticks, prescale 8, SLOWCLK/32 = 31.25 kHz: 199.936 ms) and
+# BLUE_LED (GPIO10) on SysTick (10 Hz: 100 ms). A button press (GPIO0 low at 1 s) enables the MPU with
+# flash, DRAM and peripheral regions, all executable, and the default map off (MPU_CTRL = 1). The one
+# access that would then fault, the read of PROM_BASE, is skipped because PROM_BASE is 0 (the sample
+# tests for NULL), so on silicon as here no MemManage fault follows: both LEDs keep their rates under
+# the MPU, the RAM-resident func[] thunk included. The periodic runs are long enough to span the press. A wrong region decode would stop a LED (the handler
+# drives it low) or fault.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes mpu.elf here.
+mcu: RSL15
+elf: mpu.elf
+elf_external: true
+timeout: 3
+sim_args: ["--gpio-in", "gpio.0@1000ms=0", "--gpio-in", "gpio.0@1100ms=1",
+           "--trace-memory", "0xE000ED94:4",
+           "--trace-symbol", "MemManage_Handler", "--trace-symbol", "HardFault_Handler"]
+expect_log:
+  - "write addr=0xe000ed94 width=4 value=0x1"
+expect_log_absent:
+  - "(TRACE) MemManage_Handler"
+  - "(TRACE) HardFault_Handler"
+pad_edges:
+  - {"port": "gpio", "pin": 8, "tol_ns": 1000,
+     "cases": [{"periodic": {"period_ns": 399872000, "high_ns": 199936000, "min_cycles": 6}}]}
+  - {"port": "gpio", "pin": 10, "tol_ns": 1000,
+     "cases": [{"periodic": {"period_ns": 200000000, "high_ns": 100000000, "min_cycles": 13}}]}

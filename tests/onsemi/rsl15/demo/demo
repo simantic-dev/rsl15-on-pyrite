@@ -1,0 +1,38 @@
+#!/bin/bash
+# RSL15 on pyrite: onsemi's own SDK samples, unmodified, no board.
+# usage: ./demo            (SIM= path to the pyrite sim binary; default: sim on PATH)
+set -e
+cd "$(dirname "$0")/.."
+SIM=${SIM:-sim}
+T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+pads="python3 demo/pads.py"
+scene() { printf '\n\033[1;36m━━ %s\033[0m\n\033[2m%s\033[0m\n' "$1" "$2"; }
+run() { "$SIM" RSL15 run -q "$@" 2>/dev/null || true; }
+quiet() { run "$@" >/dev/null; }   # output read from --rtt / --trace-out files
+
+scene "1. Secure bootloader starts an application" "onsemi secure_bootloader + the pack's loadable blinky, flashed at 0x00106000"
+quiet --elf secure_bootloader_app/secure_bootloader.elf --preload secure_bootloader_app/blinky_bl.bin@0x00106000 \
+    --timeout 1.2 --rtt file:"$T/bl.txt" --trace-out "$T/bl.jsonl"
+grep -v '^\s*$' "$T/bl.txt" | head -4
+$pads "$T/bl.jsonl" 8=TIMER0_LED 10=SYSTICK_LED --from 0 --to 1200 --cols 96
+
+scene "2. Sleep, wake, resume from RAM" "sleep_mode: power down, RTC alarm every 1 s, boot ROM resumes from retained DRAM"
+run --elf sleep_mode/sleep_mode.elf --timeout 4.5 --trace-symbol main --trace-symbol _Sys_PowerModes_WakeupFromRAM \
+    | grep -o '^\[[0-9.]*s\] (TRACE) [A-Za-z_]*' | sed 's/ (TRACE)//; s/_Sys_PowerModes_WakeupFromRAM/woke up, resumed from RAM/; s/ main$/ cold boot (main)/'
+
+scene "3. CryptoCell-312" "CC312_AES: onsemi's AES known-answer tests on the CC312 model"
+quiet --elf CC312_AES/CC312_AES.elf --timeout 1 --rtt file:"$T/aes.txt"
+grep -a 'PASS\|FAIL' "$T/aes.txt" | head -4
+
+scene "4. PWM on the pins" "pwm: PWM0 on GPIO2, PWM1 on GPIO3 delayed 50 clocks, 8 MHz / 101 = 79.2 kHz"
+quiet --elf pwm/pwm.elf --timeout 0.006 --trace-out "$T/pwm.jsonl"
+$pads "$T/pwm.jsonl" 2=PWM0 3=PWM1 --from 4.2 --to 4.25 --cols 96
+
+scene "5. Timers changing pace" "timers: TIMER1/TIMER2 retune TIMER0 while it runs: 65.5 -> 393 -> 328 -> 262 -> 197 -> 131 ms"
+quiet --elf timers/timers.elf --timeout 12 --trace-out "$T/tim.jsonl"
+$pads "$T/tim.jsonl" 8=TIMER0_LED --from 1900 --to 12000 --cols 96
+$pads "$T/tim.jsonl" 8="TIMER0 toggle intervals" --intervals
+
+scene "6. TrustZone" "trustzone: Secure image configures SAU + NS_ACCESS, hands over to the Non-secure image"
+run --elf trustzone/trustzone_secure.elf --preload trustzone/trustzone_non_secure.elf --timeout 3 --ascii --only-messages | grep -a -m1 "onsemi UART" || true
+printf '\n\033[2m(all unmodified onsemi SDK 1.12 samples; built with ./build_sdk.py from the public pack)\033[0m\n'

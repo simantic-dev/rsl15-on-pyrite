@@ -1,0 +1,17 @@
+# onsemi RSL15 SDK sample `hardfault_handler` (CMSIS-Pack ONSemiconductor.RSL15 1.12.374), Debug
+# build (-O0, as its .cproject), with the sample's own SWMTRACE_ENABLE switch set (build_sdk.py
+# CONFIG): it prints over swmTrace RTT instead of semihosting, which needs a debugger attached.
+# With CCR.DIV_0_TRP set it divides by zero; the UsageFault escalates (UsageFault not enabled), and
+# its HardFault handler prints the frame and fault registers. CFSR 0x02000000 is UFSR.DIVBYZERO,
+# HFSR 0x40000000 FORCED.
+# Not vendored (onsemi Software Use Agreement): ../build_sdk.py <pack> .. writes hardfault_handler.elf.
+mcu: RSL15
+elf: hardfault_handler.elf
+elf_external: true
+rtt: true
+timeout: 1
+sim_args: ["--on-fault", "continue"]  # the fault is the sample; its report is checked
+expect:
+  - "swmTrace initialized"
+  - "CFSR = 0x02000000"
+  - "HFSR = 0x40000000"
